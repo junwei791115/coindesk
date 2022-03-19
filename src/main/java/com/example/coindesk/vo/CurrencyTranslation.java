@@ -1,6 +1,6 @@
 package com.example.coindesk.vo;
 
-public class CurrencyTranslationVo {
+public class CurrencyTranslation {
 
     private String id;
 

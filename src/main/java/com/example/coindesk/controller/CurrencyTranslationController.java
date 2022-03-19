@@ -1,11 +1,10 @@
 package com.example.coindesk.controller;
 
-import com.example.coindesk.entity.CurrencyTranslationEntity;
 import com.example.coindesk.service.CurrencyTranslationService;
-import com.example.coindesk.vo.CurrencyTranslationVo;
-import com.sun.istack.NotNull;
+import com.example.coindesk.vo.CurrencyTranslation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,51 +20,87 @@ public class CurrencyTranslationController {
     @Autowired
     private CurrencyTranslationService currencyTranslationService;
 
+    /**
+     * Get currency translation list
+     *
+     * @return
+     */
     @GetMapping(value = "/currencyTranslations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<CurrencyTranslationVo>> getCurrencyTranslations() {
-        List<CurrencyTranslationVo> currencyTranslations = this.currencyTranslationService.getCurrencyTranslationList();
+    public ResponseEntity<List<? extends Object>> getCurrencyTranslations() {
+        List<CurrencyTranslation> currencyTranslations = this.currencyTranslationService.getCurrencyTranslationList();
         return new ResponseEntity<>(currencyTranslations, HttpStatus.OK);
     }
 
+    /**
+     * Get currency translation by id
+     *
+     * @param id
+     * @return
+     */
     @GetMapping(value = "/currencyTranslations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CurrencyTranslationVo> getCurrencyTranslationById(@PathVariable("id") final String id) {
-        Optional<CurrencyTranslationVo> currencyTranslationVoOptional = this.currencyTranslationService.getCurrencyTranslationById(Long.valueOf(id));
+    public ResponseEntity<? extends Object> getCurrencyTranslationById(@PathVariable("id") final String id) {
+        Optional<CurrencyTranslation> currencyTranslationVoOptional = this.currencyTranslationService.getCurrencyTranslationById(id);
         if (currencyTranslationVoOptional.isEmpty()) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Can not find currency translation by id  '" + id + "'.", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(currencyTranslationVoOptional.get(), HttpStatus.OK);
     }
 
+    /**
+     * Update currency translation by id
+     *
+     * @param id
+     * @param name
+     * @return
+     */
     @PutMapping(value = "/currencyTranslations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CurrencyTranslationVo> updateCurrencyTranslation(@PathVariable("id") final String id, String code, String name) {
-        if (this.currencyTranslationService.isCodeDuplicated(Long.valueOf(id), code)) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+    public ResponseEntity<? extends Object> updateCurrencyTranslation(@PathVariable("id") final String id, String name) {
+
+        if (!this.currencyTranslationService.isCurrencyTranslationExisted(id)) {
+            return new ResponseEntity<>("Can not find currency translation by id  '" + id + "'.", HttpStatus.NOT_FOUND);
         }
-        Optional<CurrencyTranslationVo> currencyTranslationVoOptional = this.currencyTranslationService.updateCurrencyTranslationById(Long.valueOf(id), code, name);
-        if (currencyTranslationVoOptional.isEmpty()) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
+
+        Optional<CurrencyTranslation> currencyTranslationVoOptional = this.currencyTranslationService.updateCurrencyTranslationById(id, name);
         return new ResponseEntity<>(currencyTranslationVoOptional.get(), HttpStatus.OK);
     }
 
+    /**
+     * Create currency translation.
+     *
+     * @param code
+     * @param name
+     * @return
+     */
     @PostMapping(value = "/currencyTranslations", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CurrencyTranslationVo> createCurrencyTranslation(String code, String name) {
+    public ResponseEntity<? extends Object> createCurrencyTranslation(String code, String name) {
 
         if (StringUtils.isEmpty(code)) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("The value of code can not to be null ", HttpStatus.BAD_REQUEST);
+        }
+
+        if (this.currencyTranslationService.isCodeDuplicated(code)) {
+            return new ResponseEntity<>("The value of code is duplicated ' " + code + "'. ", HttpStatus.CONFLICT);
         }
 
         if (StringUtils.isEmpty(name)) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("The value of name can not to be null ", HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>(this.currencyTranslationService.createCurrencyTranslation(code, name), HttpStatus.OK);
     }
 
+    /**
+     * Enable/Disable currency translation.
+     *
+     * @param id
+     * @return
+     */
     @DeleteMapping(value = "/currencyTranslations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteCurrencyTranslation(@PathVariable("id") final String id) {
-
-        return new ResponseEntity<>("", HttpStatus.OK);
+    public HttpEntity<? extends Object> deleteCurrencyTranslation(@PathVariable("id") final String id) {
+        if (!this.currencyTranslationService.isCurrencyTranslationExisted(id)) {
+            return new ResponseEntity<>("Can not find currency translation by id ' " + id + " '. ", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(this.currencyTranslationService.deleteCurrencyTranslationById(id), HttpStatus.OK);
     }
 
 }

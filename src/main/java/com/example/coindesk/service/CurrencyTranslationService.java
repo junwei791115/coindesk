@@ -1,22 +1,22 @@
 package com.example.coindesk.service;
 
-import com.example.coindesk.vo.CurrencyTranslationVo;
-import org.springframework.stereotype.Service;
+import com.example.coindesk.vo.CurrencyTranslation;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface CurrencyTranslationService {
-    List<CurrencyTranslationVo> getCurrencyTranslationList();
+    List<CurrencyTranslation> getCurrencyTranslationList();
 
-    Optional<CurrencyTranslationVo> getCurrencyTranslationById(long id);
+    Optional<CurrencyTranslation> getCurrencyTranslationById(String id);
 
-    Optional<CurrencyTranslationVo> updateCurrencyTranslationById(long id, String code, String name);
+    Optional<CurrencyTranslation> updateCurrencyTranslationById(String id, String name);
 
-    boolean isCodeDuplicated(long id, String code);
+    boolean isCodeDuplicated(String code);
 
-    CurrencyTranslationVo createCurrencyTranslation(String code, String name);
+    CurrencyTranslation createCurrencyTranslation(String code, String name);
 
-    void deleteCurrencyTranslationById(long id);
+    Optional<CurrencyTranslation> deleteCurrencyTranslationById(String id);
+
+    boolean isCurrencyTranslationExisted(String id);
 }

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CurrencyTranslationRepository extends JpaRepository<CurrencyTranslationEntity, Long> {
-    Optional<CurrencyTranslationEntity> findByCode(String code);
-
-    boolean existsByIdAndCode(long id, String code);
+public interface CurrencyTranslationRepository extends JpaRepository<CurrencyTranslationEntity, String> {
+    Optional<CurrencyTranslationEntity> findByCodeIgnoreCase(String code);
 }

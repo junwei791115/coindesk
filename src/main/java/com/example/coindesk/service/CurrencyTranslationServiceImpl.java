@@ -2,37 +2,43 @@ package com.example.coindesk.service;
 
 import com.example.coindesk.entity.CurrencyTranslationEntity;
 import com.example.coindesk.respository.CurrencyTranslationRepository;
-import com.example.coindesk.vo.CurrencyTranslationVo;
+import com.example.coindesk.vo.CurrencyTranslation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class CurrencyTranslationServiceImpl implements CurrencyTranslationService {
+
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
     @Autowired
     private CurrencyTranslationRepository currencyTranslationRepository;
 
     @Override
-    public List<CurrencyTranslationVo> getCurrencyTranslationList() {
+    public List<CurrencyTranslation> getCurrencyTranslationList() {
         List<CurrencyTranslationEntity> currencyTranslations = this.currencyTranslationRepository.findAll();
         return currencyTranslations.stream().map(this::getCurrencyTranslationVo).collect(Collectors.toList());
     }
 
-    private CurrencyTranslationVo getCurrencyTranslationVo(CurrencyTranslationEntity currencyTranslationEntity) {
-        CurrencyTranslationVo currencyTranslationVo = new CurrencyTranslationVo();
+    private CurrencyTranslation getCurrencyTranslationVo(CurrencyTranslationEntity currencyTranslationEntity) {
+        CurrencyTranslation currencyTranslationVo = new CurrencyTranslation();
         currencyTranslationVo.setId(String.valueOf(currencyTranslationEntity.getId()));
         currencyTranslationVo.setCode(currencyTranslationEntity.getCode());
         currencyTranslationVo.setName(currencyTranslationEntity.getName());
+        currencyTranslationVo.setUpdateTime(dateFormat.format(currencyTranslationEntity.getUpdatedTime()));
         return currencyTranslationVo;
     }
 
     @Override
-    public Optional<CurrencyTranslationVo> getCurrencyTranslationById(long id) {
+    public Optional<CurrencyTranslation> getCurrencyTranslationById(String id) {
         Optional<CurrencyTranslationEntity> currencyTranslationEntityOptional = this.currencyTranslationRepository.findById(id);
         if (currencyTranslationEntityOptional.isEmpty()) {
             return Optional.empty();
@@ -43,7 +49,8 @@ public class CurrencyTranslationServiceImpl implements CurrencyTranslationServic
     }
 
     @Override
-    public Optional<CurrencyTranslationVo> updateCurrencyTranslationById(long id, String code, String name) {
+    public Optional<CurrencyTranslation> updateCurrencyTranslationById(String id, String name) {
+
         Optional<CurrencyTranslationEntity> currencyTranslationEntityOptional = this.currencyTranslationRepository.findById(id);
         if (currencyTranslationEntityOptional.isEmpty()) {
             return Optional.empty();
@@ -51,9 +58,6 @@ public class CurrencyTranslationServiceImpl implements CurrencyTranslationServic
 
         CurrencyTranslationEntity currencyTranslationEntity = currencyTranslationEntityOptional.get();
 
-        if (StringUtils.isNotEmpty(code)) {
-            currencyTranslationEntity.setCode(code);
-        }
         if (StringUtils.isNotEmpty(name)) {
             currencyTranslationEntity.setName(name);
         }
@@ -65,24 +69,21 @@ public class CurrencyTranslationServiceImpl implements CurrencyTranslationServic
     }
 
     @Override
-    public boolean isCodeDuplicated(long id, String code) {
-        Optional<CurrencyTranslationEntity> currencyTranslationEntityOptional = this.currencyTranslationRepository.findByCode(code);
+    public boolean isCodeDuplicated(String code) {
+        Optional<CurrencyTranslationEntity> currencyTranslationEntityOptional = this.currencyTranslationRepository.findByCodeIgnoreCase(code);
         if (currencyTranslationEntityOptional.isEmpty()) {
+            return false;
+        } else {
             return true;
         }
-
-        CurrencyTranslationEntity currencyTranslationEntity = currencyTranslationEntityOptional.get();
-        if(StringUtils.equals(String.valueOf(currencyTranslationEntity.getId()), String.valueOf(id))){
-            return false;
-        }
-
-        return true;
     }
 
     @Override
-    public CurrencyTranslationVo createCurrencyTranslation(String code, String name) {
+    public CurrencyTranslation createCurrencyTranslation(String code, String name) {
+        String uuid = UUID.randomUUID().toString();
         CurrencyTranslationEntity currencyTranslationEntity = new CurrencyTranslationEntity();
-        currencyTranslationEntity.setCode(code);
+        currencyTranslationEntity.setId(uuid);
+        currencyTranslationEntity.setCode(StringUtils.upperCase(code));
         currencyTranslationEntity.setName(name);
         currencyTranslationEntity.setUpdatedTime(new Date());
         currencyTranslationEntity.setCreatedTime(new Date());
@@ -95,7 +96,19 @@ public class CurrencyTranslationServiceImpl implements CurrencyTranslationServic
     }
 
     @Override
-    public void deleteCurrencyTranslationById(long id) {
+    public Optional<CurrencyTranslation> deleteCurrencyTranslationById(String id) {
+        Optional<CurrencyTranslationEntity> currencyTranslationEntityOptional = this.currencyTranslationRepository.findById(id);
+        if (currencyTranslationEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        CurrencyTranslationEntity currencyTranslationEntity = currencyTranslationEntityOptional.get();
+        this.currencyTranslationRepository.delete(currencyTranslationEntity);
 
+        return Optional.of(this.getCurrencyTranslationVo(currencyTranslationEntity));
+    }
+
+    @Override
+    public boolean isCurrencyTranslationExisted(String id) {
+        return this.currencyTranslationRepository.existsById(id);
     }
 }
