@@ -31,7 +31,7 @@ public class CoinDeskServiceImpl implements CoinDeskService {
 
     @Override
     public Optional<CoinDesk> getCoinDesk() {
-        CoinDesk coinDeskVo = new CoinDesk();
+        CoinDesk coinDeskVo;
         String url = "https://api.coindesk.com/v1/bpi/currentprice.json";
 
         try {
@@ -67,7 +67,6 @@ public class CoinDeskServiceImpl implements CoinDeskService {
         List<CurrencyInfo> currencyInfos = new ArrayList<>();
         Map<String, Map<String, String>> bpi = coinDeskVo.getBpi();
         for (Map.Entry<String, Map<String, String>> entry : bpi.entrySet()) {
-            System.out.println("key:" + entry.getKey() + ",value:" + entry.getValue());
             String code = entry.getKey();
             Map<String, String> currencyMap = entry.getValue();
             CurrencyInfo currencyInfo = new CurrencyInfo();

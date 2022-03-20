@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -19,25 +18,22 @@ import java.util.Optional;
 public class CoinDeskController {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private CoinDeskService coinDeskService;
 
     @GetMapping(value = "/coinDesk", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<? extends Object> getCoinDesk() {
         Optional<CoinDesk> coinDeskVoOptional = this.coinDeskService.getCoinDesk();
-        if(coinDeskVoOptional.isEmpty()){
-            new ResponseEntity<>("Data not found.", HttpStatus.NOT_FOUND);
+        if (coinDeskVoOptional.isEmpty()) {
+            return new ResponseEntity<>("Data not found.", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(coinDeskVoOptional.get(), HttpStatus.OK);
     }
 
     @GetMapping(value = "/coinDeskInformation", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<? extends Object> getCoinDeskUpdateTime() throws JsonProcessingException {
+    public ResponseEntity<? extends Object> getCoinDeskInformation() {
         Optional<CoinDeskInfo> coinDeskInfoOptional = this.coinDeskService.getCoinDeskInformation();
-        if(coinDeskInfoOptional.isEmpty()){
-            new ResponseEntity<>("Data not found.", HttpStatus.NOT_FOUND);
+        if (coinDeskInfoOptional.isEmpty()) {
+            return new ResponseEntity<>("Data not found.", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(coinDeskInfoOptional.get(), HttpStatus.OK);
     }

@@ -96,7 +96,7 @@ public class CurrencyTranslationController {
      * @return
      */
     @DeleteMapping(value = "/currencyTranslations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public HttpEntity<? extends Object> deleteCurrencyTranslation(@PathVariable("id") final String id) {
+    public ResponseEntity<? extends Object> deleteCurrencyTranslation(@PathVariable("id") final String id) {
         if (!this.currencyTranslationService.isCurrencyTranslationExisted(id)) {
             return new ResponseEntity<>("Can not find currency translation by id ' " + id + " '. ", HttpStatus.NOT_FOUND);
         }
